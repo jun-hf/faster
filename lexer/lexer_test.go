@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/jun-hf/faster/token"
@@ -14,8 +15,7 @@ func TestNextToken(t *testing.T) {
 		x + y;
 	};
 
-	let result = add(five, ten)
-	`
+	let result = add(five, ten);`
 
 	tests := []struct{
 		expectedType token.TokenType
@@ -65,6 +65,34 @@ func TestNextToken(t *testing.T) {
 	for i, tt := range tests {
 		tok := l.NextToken()
 
+		if tok.Type != tt.expectedType {
+			t.Fatalf("test[%d] - tokentype wrong, expected=%q, got got=%q", i, tt.expectedType, tok.Type)
+		}
+
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("test[%d] - literal wrong, expected=%q, got got=%q", i, tt.expectedLiteral, tok.Literal)	
+		}
+	}
+}
+
+func TestSkipWhitespace(t *testing.T) {
+	input := "let five = 6;"
+
+	l := New(input)
+	expected := []struct{
+		expectedType token.TokenType
+		expectedLiteral string
+	}{
+		{token.LET, "let"},
+		{token.IDENT, "five"},
+		{token.ASSIGN, "="},
+		{token.INT, "6"},
+		{token.SEMICOLON, ";"},
+		{token.EOF, ""},
+	}
+
+	for i, tt := range expected {
+		tok := l.NextToken()
 		if tok.Type != tt.expectedType {
 			t.Fatalf("test[%d] - tokentype wrong, expected=%q, got got=%q", i, tt.expectedType, tok.Type)
 		}
